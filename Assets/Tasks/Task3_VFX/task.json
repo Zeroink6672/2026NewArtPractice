@@ -1,0 +1,31 @@
+{
+  "taskId": "task3_vfx",
+  "title": "元素特效套组",
+  "contractVersion": 1,
+  "summary": "六元素 × 四类型的序列帧特效。必需 12 套（子弹 + 爆炸），喷射与坠落为加分项。",
+  "delivery": {
+    "scanRoot": "Assets/Tasks/Task3_VFX",
+    "layout": "<Element>/<Type>/<Element>_<Type>_####.png",
+    "filePattern": "*.png",
+    "canvas": { "width": 256, "height": 256 },
+    "pivot": "Center",
+    "pixelsPerUnit": 100,
+    "frameRate": 24,
+    "note": "同一套特效的帧要对齐画面中心，不要做位移；位移和发射由播放端完成。"
+  },
+  "elements": [
+    { "name": "Thunder", "label": "雷" },
+    { "name": "Fire",    "label": "火" },
+    { "name": "Ice",     "label": "冰" },
+    { "name": "Poison",  "label": "毒" },
+    { "name": "Earth",   "label": "土" },
+    { "name": "Life",    "label": "生命" }
+  ],
+  "types": [
+    { "name": "Bullet",    "label": "子弹", "required": true,  "loop": true,  "minFrames": 4, "blend": "Additive"   },
+    { "name": "Explosion", "label": "爆炸", "required": true,  "loop": false, "minFrames": 8, "blend": "Additive"   },
+    { "name": "Spray",     "label": "喷射", "required": false, "loop": true,  "minFrames": 6, "blend": "AlphaBlend" },
+    { "name": "Fall",      "label": "坠落", "required": false, "loop": false, "minFrames": 6, "blend": "AlphaBlend" }
+  ],
+  "requiredElements": ["Thunder", "Fire", "Ice", "Poison", "Earth", "Life"]
+}

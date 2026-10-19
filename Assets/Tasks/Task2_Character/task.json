@@ -1,0 +1,67 @@
+{
+  "taskId": "task2_character",
+  "title": "角色全套状态机动画序列帧",
+  "contractVersion": 1,
+  "summary": "一个角色、五个状态，以序列帧交付；工具会自动生成 AnimationClip 并接入手工维护的状态机。",
+  "delivery": {
+    "scanRoot": "Assets/Tasks/Task2_Character",
+    "layout": "<State>/<State>_####.png",
+    "filePattern": "*.png",
+    "canvas": { "width": 512, "height": 512 },
+    "pivot": "BottomCenter",
+    "pixelsPerUnit": 100,
+    "frameRate": 12,
+    "note": "同一状态内所有帧的画布尺寸与脚底位置必须完全一致，否则播放时会抖动。"
+  },
+  "states": [
+    {
+      "name": "Idle",
+      "folder": "Idle",
+      "required": true,
+      "loop": true,
+      "minFrames": 8,
+      "description": "待机循环，呼吸起伏，首尾无缝"
+    },
+    {
+      "name": "Run",
+      "folder": "Run",
+      "required": true,
+      "loop": true,
+      "minFrames": 8,
+      "description": "跑步循环，首尾无缝"
+    },
+    {
+      "name": "Attack",
+      "folder": "Attack",
+      "required": true,
+      "loop": false,
+      "minFrames": 6,
+      "description": "普通攻击：起手 → 挥击 → 收招"
+    },
+    {
+      "name": "Hit",
+      "folder": "Hit",
+      "required": true,
+      "loop": false,
+      "minFrames": 3,
+      "description": "受击硬直，幅度明显"
+    },
+    {
+      "name": "Die",
+      "folder": "Die",
+      "required": true,
+      "loop": false,
+      "minFrames": 6,
+      "description": "倒地，播放完停在最后一帧"
+    }
+  ],
+  "animator": {
+    "parameters": {
+      "Speed":  { "type": "float",   "note": "大于 0.1 进入 Run" },
+      "Attack": { "type": "trigger", "note": "攻击输入" },
+      "Hit":    { "type": "trigger", "note": "受击输入" },
+      "Dead":   { "type": "bool",    "note": "为 true 进入 Die 且不返回" }
+    },
+    "note": "状态机由助教维护，你不需要打开 Animator 窗口。帧数变化后由工具重新生成 clip。"
+  }
+}

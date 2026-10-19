@@ -1,0 +1,39 @@
+{
+  "taskId": "task1_icons",
+  "title": "RPG 道具图标套组",
+  "contractVersion": 1,
+  "summary": "16 枚 64×64 透明底道具图标，统一描边、光源与配色。",
+  "delivery": {
+    "scanRoot": "Assets/Tasks/Task1_Icons/DropHere",
+    "filePattern": "*.png",
+    "fileNameRule": "<slot.id>.png",
+    "canvas": { "width": 64, "height": 64 },
+    "pivot": "Center",
+    "pixelsPerUnit": 100,
+    "background": "transparent",
+    "note": "源文件必须正好是交付尺寸，不接受把大图缩下来或裁一块交付。"
+  },
+  "slots": [
+    { "id": "icon_potion_hp", "label": "生命药水", "required": true },
+    { "id": "icon_potion_mp", "label": "法力药水", "required": true },
+    { "id": "icon_sword",     "label": "铁剑",     "required": true },
+    { "id": "icon_shield",    "label": "木盾",     "required": true },
+    { "id": "icon_bow",       "label": "长弓",     "required": true },
+    { "id": "icon_staff",     "label": "法杖",     "required": true },
+    { "id": "icon_ring",      "label": "戒指",     "required": true },
+    { "id": "icon_amulet",    "label": "护符",     "required": true },
+    { "id": "icon_scroll",    "label": "卷轴",     "required": true },
+    { "id": "icon_gem",       "label": "宝石",     "required": true },
+    { "id": "icon_coin",      "label": "金币",     "required": true },
+    { "id": "icon_key",       "label": "钥匙",     "required": true },
+    { "id": "icon_bomb",      "label": "炸弹",     "required": true },
+    { "id": "icon_herb",      "label": "草药",     "required": true },
+    { "id": "icon_map",       "label": "地图",     "required": true },
+    { "id": "icon_boots",     "label": "靴子",     "required": true }
+  ],
+  "styleGuide": {
+    "outline": "1px 深色描边，保证在 64px 下轮廓可读",
+    "light": "统一左上 45° 单光源",
+    "palette": "参考 Examples/ 内的范例"
+  }
+}
