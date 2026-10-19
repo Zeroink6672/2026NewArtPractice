@@ -23,8 +23,8 @@ namespace ArtPractice.Preview
         private readonly List<bool> _iconSizeOk = new List<bool>();
 
         private Animator _animator;
-        private float _attackTimer = 2.5f;
-        private float _hitTimer = 7f;
+        private Transform _character;
+        private SpriteRenderer _characterRenderer;
 
         private SpriteRenderer _vfxRenderer;
         private Sprite[] _vfxFrames;
@@ -36,6 +36,7 @@ namespace ArtPractice.Preview
         private string _vfxTitle = string.Empty;
 
         private GUIStyle _headerStyle;
+        private GUIStyle _errorHeaderStyle;
         private GUIStyle _labelStyle;
         private GUIStyle _errorStyle;
         private GUIStyle _bigStyle;
@@ -87,6 +88,8 @@ namespace ArtPractice.Preview
             _iconPositions.Clear();
             _iconSizeOk.Clear();
             _animator = null;
+            _character = null;
+            _characterRenderer = null;
             _vfxRenderer = null;
             _vfxFrames = null;
             _vfxFrame = 0;
@@ -148,9 +151,9 @@ namespace ArtPractice.Preview
                 Quaternion.identity, _root);
             instance.transform.localScale = Vector3.one * 0.5f;
 
+            _character = instance.transform;
+            _characterRenderer = instance.GetComponent<SpriteRenderer>();
             _animator = instance.GetComponent<Animator>();
-            _attackTimer = 2.5f;
-            _hitTimer = 7f;
         }
 
         private void BuildVfx()
@@ -224,20 +227,43 @@ namespace ArtPractice.Preview
         {
             if (_task != 2 || _animator == null) return;
 
-            _animator.SetFloat("Speed", Mathf.Abs(Mathf.Sin(Time.time * 0.8f)) * 2f);
-
-            _attackTimer -= Time.deltaTime;
-            if (_attackTimer <= 0f)
+            // 倒地后只认 U 键，其他输入一律无效
+            if (_animator.GetBool("Dead"))
             {
-                _animator.SetTrigger("Attack");
-                _attackTimer = 4f;
+                _animator.SetFloat("Speed", 0f);
+                if (Input.GetKeyDown(KeyCode.U))
+                    _animator.SetBool("Dead", false);
+                return;
             }
 
-            _hitTimer -= Time.deltaTime;
-            if (_hitTimer <= 0f)
+            float direction = 0f;
+            if (Input.GetKey(KeyCode.A)) direction -= 1f;   // 左
+            if (Input.GetKey(KeyCode.D)) direction += 1f;   // 右
+
+            // 攻击 / 受击期间锁住位移，否则会边挥刀边滑步
+            AnimatorStateInfo state = _animator.GetCurrentAnimatorStateInfo(0);
+            bool actionLocked = state.IsName("Attack") || state.IsName("Hit");
+            bool moving = direction != 0f && !actionLocked && _character != null;
+
+            _animator.SetFloat("Speed", moving ? 2f : 0f);
+
+            if (moving)
             {
-                _animator.SetTrigger("Hit");
-                _hitTimer = 9f;
+                Vector3 position = _character.localPosition;
+                position.x = Mathf.Clamp(position.x + direction * 2.5f * Time.deltaTime, -3.5f, 3.5f);
+                _character.localPosition = position;
+
+                if (_characterRenderer != null)
+                    _characterRenderer.flipX = direction < 0f;
+            }
+
+            if (Input.GetKeyDown(KeyCode.J)) _animator.SetTrigger("Attack");
+            if (Input.GetKeyDown(KeyCode.H)) _animator.SetTrigger("Hit");
+
+            if (Input.GetKeyDown(KeyCode.U))
+            {
+                _animator.SetBool("Dead", true);
+                _animator.SetFloat("Speed", 0f);
             }
         }
 
@@ -296,7 +322,7 @@ namespace ArtPractice.Preview
                 "[1] 图标    [2] 角色    [3] 特效        [Q/E] 切换特效        [R] 重播",
                 _headerStyle);
             GUI.Label(new Rect(20f, 34f, 1400f, 26f), status,
-                _catalog.ErrorCount > 0 ? _errorStyle : _headerStyle);
+                _catalog.ErrorCount > 0 ? _errorHeaderStyle : _headerStyle);
 
             if (_task == 1) DrawIconLabels();
             else if (_task == 2) DrawCharacterCaption();
@@ -315,11 +341,20 @@ namespace ArtPractice.Preview
 
         private void DrawCharacterCaption()
         {
-            string text = _catalog.character.Count == 0
-                ? "课题二：Idle/Run/Attack/Hit/Die 还没有帧"
-                : "课题二：Speed 自动摆动，Attack / Hit 自动触发";
+            if (_catalog.character.Count == 0)
+            {
+                GUI.Label(new Rect(20f, Screen.height - 40f, 1200f, 24f),
+                    "课题二：Idle/Run/Attack/Hit/Die 还没有帧", _headerStyle);
+                return;
+            }
 
-            GUI.Label(new Rect(20f, Screen.height - 40f, 1200f, 24f), text, _headerStyle);
+            bool dead = _animator != null && _animator.GetBool("Dead");
+            string text = dead
+                ? "已倒地 —— 按 U 起身（其他操作无效）"
+                : "A / D 左右奔跑     J 攻击     H 受击     U 倒地";
+
+            GUI.Label(new Rect(20f, Screen.height - 40f, 1200f, 24f), text,
+                dead ? _errorHeaderStyle : _headerStyle);
         }
 
         private void DrawVfxCaption()
@@ -342,6 +377,9 @@ namespace ArtPractice.Preview
 
             _headerStyle = new GUIStyle(GUI.skin.label) { fontSize = 13 };
             _headerStyle.normal.textColor = new Color(0.85f, 0.87f, 0.9f);
+
+            _errorHeaderStyle = new GUIStyle(_headerStyle);
+            _errorHeaderStyle.normal.textColor = new Color(1f, 0.45f, 0.4f);
 
             _labelStyle = new GUIStyle(GUI.skin.label)
             {

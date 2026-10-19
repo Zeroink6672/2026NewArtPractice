@@ -327,6 +327,8 @@ public static class PreviewGenerator
                 var anyToDie = machine.AddAnyStateTransition(die);
                 anyToDie.hasExitTime = false;
                 anyToDie.duration = 0.10f;
+                // Dead 是持久 bool，允许自转移会让死亡动画每帧重播、永远播不完
+                anyToDie.canTransitionToSelf = false;
                 anyToDie.AddCondition(AnimatorConditionMode.If, 0f, "Dead");
 
                 var revive = die.AddTransition(idle);
@@ -347,6 +349,13 @@ public static class PreviewGenerator
                 child.state.motion = clip;
             else
                 child.state.motion = null;   // 对应 clip 已删除，避免留下悬空引用
+        }
+
+        // 修正旧版本生成的状态机：AnyState → Die 必须禁止自转移
+        foreach (var transition in controller.layers[0].stateMachine.anyStateTransitions)
+        {
+            if (transition.destinationState != null && transition.destinationState.name == "Die")
+                transition.canTransitionToSelf = false;
         }
 
         EditorUtility.SetDirty(controller);
