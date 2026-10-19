@@ -12,7 +12,7 @@ public static class ArtPracticeSelfCheck
     [MenuItem("Tools/美术课题/自检", false, 11)]
     public static void Run()
     {
-        PreviewGenerator.Generate(false);
+        PreviewGenerator.Generate();
 
         var catalog = AssetDatabase.LoadAssetAtPath<PreviewCatalog>(PreviewGenerator.CatalogAssetPath);
         if (catalog == null)

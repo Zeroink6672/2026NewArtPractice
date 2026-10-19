@@ -28,16 +28,16 @@ public static class PreviewGenerator
     [MenuItem("Tools/美术课题/重新生成预览数据", false, 10)]
     public static void GenerateMenu()
     {
-        Generate(true);
+        Generate();
     }
 
     /// <summary>批处理入口：-executeMethod PreviewGenerator.GenerateFromCommandLine</summary>
     public static void GenerateFromCommandLine()
     {
-        Generate(true);
+        Generate();
     }
 
-    public static void Generate(bool verbose)
+    public static void Generate()
     {
         var issues = new List<PreviewIssue>();
 
@@ -63,7 +63,7 @@ public static class PreviewGenerator
         AssetDatabase.SaveAssets();
         AssetDatabase.Refresh();
 
-        if (verbose) LogSummary(catalog);
+        LogSummary(catalog);
     }
 
     // ------------------------------------------------------------------ 课题一
@@ -566,13 +566,61 @@ public static class PreviewGenerator
 
     private static void LogSummary(PreviewCatalog catalog)
     {
-        int iconsOk = catalog.icons.Count(i => i.sprite != null);
-        int frameCount = catalog.character.Sum(c => c.frames != null ? c.frames.Length : 0);
+        int iconsOk = 0;
+        var missing = new List<string>();
+        foreach (var icon in catalog.icons)
+        {
+            if (icon.sprite != null) iconsOk++;
+            else missing.Add(icon.id);
+        }
 
-        Debug.Log("[美术课题] 预览数据已生成 · " +
-                  $"图标 {iconsOk}/{catalog.icons.Count} · " +
-                  $"角色 {catalog.character.Count} 个状态 / {frameCount} 帧 · " +
-                  $"特效 {catalog.vfx.Count} 套 · " +
-                  $"错误 {catalog.ErrorCount} · 警告 {catalog.WarningCount}");
+        string error;
+        var charContract = TaskContracts.Load<Task2Contract>(TaskContracts.Task2Path, out error);
+        var vfxContract = TaskContracts.Load<Task3Contract>(TaskContracts.Task3Path, out error);
+
+        int stateTotal = charContract != null && charContract.states != null ? charContract.states.Length : 0;
+
+        int vfxTotal = 0;
+        if (vfxContract != null && vfxContract.types != null)
+        {
+            int requiredTypes = 0;
+            foreach (var type in vfxContract.types)
+                if (type.required) requiredTypes++;
+
+            int requiredElements = vfxContract.requiredElements != null
+                ? vfxContract.requiredElements.Length
+                : 0;
+
+            vfxTotal = requiredTypes * requiredElements;
+        }
+
+        int vfxOk = 0;
+        foreach (var entry in catalog.vfx)
+            if (entry.required) vfxOk++;
+
+        var sb = new System.Text.StringBuilder();
+        sb.Append($"[美术课题] 已扫描 · 图标 {iconsOk}/{catalog.icons.Count}");
+        sb.Append($" · 角色 {catalog.character.Count}/{stateTotal} 个状态");
+        sb.Append($" · 特效 {vfxOk}/{vfxTotal} 套");
+        sb.Append($" · 错误 {catalog.ErrorCount} · 警告 {catalog.WarningCount}");
+
+        if (missing.Count > 0)
+        {
+            int shown = Mathf.Min(4, missing.Count);
+            sb.Append(" · 缺 ").Append(string.Join("、", missing.GetRange(0, shown).ToArray()));
+            if (missing.Count > shown) sb.Append($" 等 {missing.Count} 个");
+        }
+
+        foreach (var issue in catalog.issues)
+        {
+            if (issue.severity != IssueSeverity.Error) continue;
+            sb.Append(" · 首个问题：").Append(issue.message);
+            break;
+        }
+
+        sb.Append(" · 详情 Tools / 美术课题 / 自检");
+
+        if (catalog.ErrorCount > 0) Debug.LogWarning(sb.ToString());
+        else Debug.Log(sb.ToString());
     }
 }

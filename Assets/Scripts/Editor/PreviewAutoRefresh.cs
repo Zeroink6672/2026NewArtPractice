@@ -19,7 +19,7 @@ public class PreviewAutoRefresh : AssetPostprocessor
         {
             if (Application.isPlaying) return;
             if (AssetDatabase.LoadAssetAtPath<PreviewCatalog>(PreviewGenerator.CatalogAssetPath) == null)
-                PreviewGenerator.Generate(false);
+                PreviewGenerator.Generate();
         };
     }
 
@@ -40,7 +40,7 @@ public class PreviewAutoRefresh : AssetPostprocessor
         {
             _pending = false;
             if (Application.isPlaying) return;
-            PreviewGenerator.Generate(false);
+            PreviewGenerator.Generate();
         };
     }
 
