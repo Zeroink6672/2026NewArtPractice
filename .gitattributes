@@ -1,2 +1,38 @@
-# Auto detect text files and perform LF normalization
-* text=auto
+# ---------------------------------------------------------------------------
+# 2026NewArtPractice
+#
+# 规则：文本文件一律 LF；美术资源走 Git LFS；Unity 序列化资源禁止自动合并。
+# 改动本文件后，如已有文件需要重新规范化：git add --renormalize .
+# ---------------------------------------------------------------------------
+
+* text=auto eol=lf
+
+# --- 文本文件 ---------------------------------------------------------------
+*.cs      diff=csharp
+*.shader  diff=csharp
+*.json    text eol=lf
+*.md      text eol=lf
+
+# --- Git LFS：二进制美术资源 -----------------------------------------------
+# 这一段的 filter=lfs 不能删。删了之后 PNG 会以原始二进制进 git 历史，
+# 仓库会迅速膨胀到无法克隆，且只能靠 git lfs migrate 重写历史来补救。
+*.png   filter=lfs diff=lfs merge=lfs -text
+*.tga   filter=lfs diff=lfs merge=lfs -text
+*.tif   filter=lfs diff=lfs merge=lfs -text
+*.tiff  filter=lfs diff=lfs merge=lfs -text
+*.exr   filter=lfs diff=lfs merge=lfs -text
+*.psd   filter=lfs diff=lfs merge=lfs -text
+*.psb   filter=lfs diff=lfs merge=lfs -text
+*.wav   filter=lfs diff=lfs merge=lfs -text
+*.mp3   filter=lfs diff=lfs merge=lfs -text
+*.ogg   filter=lfs diff=lfs merge=lfs -text
+*.fbx   filter=lfs diff=lfs merge=lfs -text
+
+# --- Unity 序列化资源：宁可显式冲突，也不要产出半坏的 YAML -------------------
+# 场景/预制体/状态机的自动合并结果通常是"能打开但引用错乱"，比冲突更难查。
+*.unity       merge=binary
+*.prefab      merge=binary
+*.asset       merge=binary
+*.controller  merge=binary
+*.anim        merge=binary
+*.mat         merge=binary

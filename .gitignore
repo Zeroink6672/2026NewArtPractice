@@ -73,3 +73,24 @@ crashlytics-build.properties
 # Temporary auto-generated Android Assets
 /[Aa]ssets/[Ss]treamingAssets/aa.meta
 /[Aa]ssets/[Ss]treamingAssets/aa/*
+
+# ===========================================================================
+# 2026NewArtPractice 追加规则
+# ===========================================================================
+
+# 只提交导出的 PNG；PSD/PSB/AI 源文件不入库（体积大、合并无意义）。
+# 如果助教需要检查源文件，删掉下面三行。
+*.psd
+*.psb
+*.ai
+
+# 系统 / 剪辑软件垃圾文件
+.DS_Store
+Thumbs.db
+desktop.ini
+*.tmp~
+
+# 录屏与演示视频不进仓库
+*.mp4
+*.mov
+*.avi
