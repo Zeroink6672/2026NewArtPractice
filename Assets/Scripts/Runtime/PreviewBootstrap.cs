@@ -341,19 +341,17 @@ namespace ArtPractice.Preview
 
         private void DrawCharacterCaption()
         {
-            if (_catalog.character.Count == 0)
-            {
-                GUI.Label(new Rect(20f, Screen.height - 40f, 1200f, 24f),
-                    "课题二：Idle/Run/Attack/Hit/Die 还没有帧", _headerStyle);
-                return;
-            }
-
             bool dead = _animator != null && _animator.GetBool("Dead");
-            string text = dead
-                ? "已倒地 —— 按 U 起身（其他操作无效）"
-                : "A / D 左右奔跑     J 攻击     H 受击     U 倒地";
 
-            GUI.Label(new Rect(20f, Screen.height - 40f, 1200f, 24f), text,
+            string text;
+            if (dead)
+                text = "已倒地 —— 按 U 起身（其他操作无效）";
+            else if (_catalog.character.Count == 0)
+                text = "A / D 左右奔跑     J 攻击     H 受击     U 倒地     （还没有帧，放图后重新生成即可看到动作）";
+            else
+                text = "A / D 左右奔跑     J 攻击     H 受击     U 倒地";
+
+            GUI.Label(new Rect(20f, Screen.height - 40f, 1600f, 24f), text,
                 dead ? _errorHeaderStyle : _headerStyle);
         }
 
