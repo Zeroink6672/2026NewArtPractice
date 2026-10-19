@@ -16,7 +16,6 @@ public static class ProjectSetup
     {
         EditorSettings.defaultBehaviorMode = EditorBehaviorMode.Mode2D;
         EditorSettings.serializationMode = SerializationMode.ForceText;
-        EditorSettings.externalVersionControl = "Visible Meta Files";
 
         PlayerSettings.companyName = "Chuangyou Workshop";
         PlayerSettings.productName = "2026NewArtPractice";
