@@ -1,0 +1,18 @@
+{
+  "taskId": "task2_materials",
+  "title": "材质",
+  "contractVersion": 1,
+  "summary": "3 套可平铺材质 + 2 套贴在指定模型上的材质。",
+  "delivery": {
+    "scanRoot": "Assets/Tasks/Task2_Materials/DropHere",
+    "filePattern": "*.png",
+    "textureSize": 1024
+  },
+  "materials": [
+    { "id": "rock",   "label": "岩石", "tileable": true },
+    { "id": "metal",  "label": "金属", "tileable": true },
+    { "id": "wood",   "label": "木材", "tileable": true },
+    { "id": "crate",  "label": "木箱", "tileable": false, "model": "Assets/Tasks/Task2_Materials/Base/Crate.fbx" },
+    { "id": "pillar", "label": "石柱", "tileable": false, "model": "Assets/Tasks/Task2_Materials/Base/Pillar.fbx" }
+  ]
+}

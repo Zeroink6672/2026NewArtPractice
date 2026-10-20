@@ -1,0 +1,17 @@
+{
+  "taskId": "task1_props",
+  "title": "道具建模",
+  "contractVersion": 1,
+  "summary": "从零完成 5 件低模道具，其中宝箱要做高模→低模烘焙。",
+  "delivery": {
+    "scanRoot": "Assets/Tasks/Task1_Props/DropHere",
+    "filePattern": "*.fbx"
+  },
+  "props": [
+    { "id": "sword",  "label": "长剑", "maxTriangles": 3000, "maxDimension": 1.1,  "tolerance": 0.3 },
+    { "id": "shield", "label": "圆盾", "maxTriangles": 3000, "maxDimension": 0.7,  "tolerance": 0.3 },
+    { "id": "potion", "label": "药瓶", "maxTriangles": 2000, "maxDimension": 0.25, "tolerance": 0.4 },
+    { "id": "torch",  "label": "火把", "maxTriangles": 3000, "maxDimension": 0.6,  "tolerance": 0.3 },
+    { "id": "chest",  "label": "宝箱", "maxTriangles": 8000, "maxDimension": 0.9,  "tolerance": 0.3 }
+  ]
+}

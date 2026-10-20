@@ -31,6 +31,8 @@ public class PreviewAutoRefresh3D : AssetPostprocessor
 
         try
         {
+            Task1Pipeline.Generate();
+            Task2Pipeline.Generate();
             Task3Pipeline.Generate();
             Task4Pipeline.Generate();
         }
@@ -56,6 +58,8 @@ public class PreviewAutoRefresh3D : AssetPostprocessor
         {
             _pending = false;
             if (Application.isPlaying) return;
+            Task1Pipeline.Generate();
+            Task2Pipeline.Generate();
             Task3Pipeline.Generate();
             Task4Pipeline.Generate();
         };
