@@ -22,7 +22,7 @@
 | 文件 | 说明 |
 | --- | --- |
 | `Assets/Tasks/Task3_Diorama/Base/Kit.fbx` | 28 件低模套件（墙、柱、桌、桶、宝箱、药瓶、武器等），统一 1 m 网格，白模 |
-| `Assets/Tasks/Task3_Diorama/Base/Blockout.fbx` | 立方体拼的 4×4 m 白模：地面、三面墙、工作台、货架、平台、柱子 |
+| `Assets/Tasks/Task3_Diorama/Base/Blockout.fbx` | 立方体拼的 4×4 m 白模（12 个方块）：地面、三面墙（左墙带 0.8×0.6 窗洞）、L 形隔断、炼金炉体、工作台、货架、平台 |
 
 素材是 **CC0**（Kenney Mini Dungeon），可以随便改。
 
