@@ -27,7 +27,7 @@
 
 ### 0.3 交作业只用一个文件夹
 
-所有文件都放进对应课题的 `DropHere/`：
+所有文件都放进对应课题的 `DropHere/`，**不要建子文件夹**：
 
 ```
 Assets/Tasks/Task1_Props/DropHere/
@@ -53,7 +53,39 @@ Assets/Tasks/Task4_Character/DropHere/
 
 ---
 
-## 1. 通用约定
+## 1. 目录结构
+
+```
+Assets/
+├── Tasks/
+│   ├── Task1_Props/               课题一：道具建模
+│   │   ├── task.json              ← 交付契约（文件清单 / 面数 / 尺寸）
+│   │   └── DropHere/              ← 你只往这里放
+│   ├── Task2_Materials/           课题二：材质
+│   │   ├── task.json
+│   │   ├── Base/                  ← Crate.fbx / Pillar.fbx（指定模型）
+│   │   └── DropHere/
+│   ├── Task3_Diorama/             课题三：场景美化
+│   │   ├── task.json
+│   │   ├── Base/                  ← Kit.fbx / Blockout.fbx
+│   │   └── DropHere/
+│   └── Task4_Character/           课题四：骨骼动画
+│       ├── task.json
+│       ├── Base/                  ← Dummy.fbx / BaseCharacter.prefab
+│       └── DropHere/
+├── Scenes/Preview3D.unity         ← 唯一需要打开的测试场景
+├── Scripts/                       ← 助教维护，不要动
+└── Settings/                      ← URP 管线资产，不要动
+```
+
+**空文件夹不是丢了**：Git 不记录空目录，每个空目录里有 `.gitkeep`，不要删。
+
+**生成物不入库**：`Assets/Resources/Preview/`、`Task4_Character/Animation.controller`
+这些文件由工程自动生成，第一次打开时重建，不要手改、也不用手动提交。
+
+---
+
+## 2. 通用约定
 
 | 项 | 约定 |
 | --- | --- |
@@ -65,7 +97,14 @@ Assets/Tasks/Task4_Character/DropHere/
 | 法线 | Tangent Space，导入类型设为 Normal Map，sRGB 关闭 |
 | 源文件 | `.blend` / `.max` 一律不提交 |
 
-贴图统一三张，按后缀命名：
+### 2.1 文件命名
+
+- **全部小写**，只用字母、数字、下划线
+- **不要空格、中文、括号**，例如不要 `长剑 (1).fbx`
+- FBX 名 = 道具 id，贴图 = id + 固定后缀
+- 大小写严格按表里写，`Sword.fbx` 和 `sword.fbx` 在 Linux 上不是一回事
+
+### 2.2 贴图三件套
 
 | 后缀 | 内容 | 导入设置（工程会自动设） |
 | --- | --- | --- |
@@ -73,79 +112,148 @@ Assets/Tasks/Task4_Character/DropHere/
 | `_Normal` | 法线 | Normal Map 类型，sRGB 关 |
 | `_MaskMap` | R 金属度、G AO、A 光滑度 | sRGB 关 |
 
+MaskMap 的通道含义：
+
+| 通道 | 内容 | 取值 |
+| --- | --- | --- |
+| R | Metallic | 0 = 非金属，255 = 金属 |
+| G | AO | 255 = 无遮挡，0 = 全遮挡（平铺材质填 255） |
+| B | 预留 | 填 0 |
+| A | Smoothness | 0 = 粗糙，255 = 光滑 |
+
+在 Photoshop 里用「通道」面板拼，在 Substance 里用 Pack 节点拼。
+
 ---
 
-## 2. 课题一 · 道具建模
+## 3. 课题一 · 道具建模
 
 **目标**：从零完成 5 件可进引擎的低模道具，并体验一次高模→低模烘焙。
 
-| 文件 | 道具 | 参考最大边 | 面数上限 |
-| --- | --- | --- | --- |
-| `sword.fbx` | 长剑 | 1.1 m | 3,000 |
-| `shield.fbx` | 圆盾 | 0.7 m | 3,000 |
-| `potion.fbx` | 药瓶 | 0.25 m | 2,000 |
-| `torch.fbx` | 火把 | 0.6 m | 3,000 |
-| `chest.fbx` | 宝箱 | 0.9 m | 8,000（高模烘焙） |
+### 3.1 放到哪
 
-### 你要做什么
+`Assets/Tasks/Task1_Props/DropHere/`
 
-1. **按尺寸建模**：先用方块搭比例，确认最大边接近参考值再细化
-2. **展 UV**：不重叠、留边距；宝箱这种硬表面按面分块
-3. **宝箱做高模→低模**：高模倒角 + 铆钉 + 木纹起伏，拓扑低模后烘焙 Normal 和 AO
-4. **画三张贴图**：`_Albedo` / `_Normal` / `_MaskMap`，1024（宝箱可 2048）
-5. **对轴心**：把轴心移到模型底部中心，应用全部变换
-6. **导出**：`<id>.fbx`，名字必须是表里那五个
-7. **放进** `Task1_Props/DropHere/`，回 Unity 按 `1` 看效果
+### 3.2 文件清单（20 个）
 
-### 验收
+每件道具 = 1 个 FBX + 3 张贴图。
+
+| id | FBX | 贴图 | 道具 | 参考最大边 | 面数上限 |
+| --- | --- | --- | --- | --- | --- |
+| `sword` | `sword.fbx` | `sword_Albedo.png` `sword_Normal.png` `sword_MaskMap.png` | 长剑 | 1.1 m | 3,000 |
+| `shield` | `shield.fbx` | `shield_*.png` | 圆盾 | 0.7 m | 3,000 |
+| `potion` | `potion.fbx` | `potion_*.png` | 药瓶 | 0.25 m | 2,000 |
+| `torch` | `torch.fbx` | `torch_*.png` | 火把 | 0.6 m | 3,000 |
+| `chest` | `chest.fbx` | `chest_*.png`（可用 2048） | 宝箱 | 0.9 m | 8,000 |
+
+**命名规则**：贴图 = `<id>_Albedo.png` / `<id>_Normal.png` / `<id>_MaskMap.png`。
+把表里的 id 代进去就是文件名，例如 `shield` → `shield_Albedo.png`、`shield_Normal.png`、`shield_MaskMap.png`。
+不要写成 `Shield.Albedo.png`、`盾牌_颜色.png` 这种。
+
+### 3.3 每件怎么做
+
+| id | 造型重点 |
+| --- | --- |
+| `sword` | 剑身要直、有厚度；护手和握把分开建；刃口可以加一道高光面 |
+| `shield` | 曲面盾面 + 正面纹样；背面要有把手和绑带 |
+| `potion` | 圆润瓶身 + 瓶颈 + 瓶塞；液体单独一个面，方便以后做透明 |
+| `torch` | 木柄 + 布头 + 金属箍，天然三段；布头可以破一点 |
+| `chest` | 箱体 + 弧形盖 + 锁扣 + 铆钉；这件要做高模烘焙 |
+
+### 3.4 步骤
+
+1. **定比例**：在场景里放一个 1 m 立方体当参照，先把最大边调到表里的值
+2. **白模搭建**：大块面切出来（箱体、柄、刃），确认剪影再细化
+3. **展 UV**：不重叠、边缘留 4 px 边距；硬表面按面分块，曲面尽量少接缝
+4. **宝箱烘焙**：
+   - 高模做倒角、铆钉、木纹起伏
+   - 拓扑低模（不要直接减面）
+   - 烘焙 Normal 和 AO，AO 进 MaskMap 的 G 通道
+5. **画贴图**：三张 1024（宝箱可 2048），Albedo 不要带光照，Normal 只放凹凸
+6. **对轴心**：把轴心移到模型**底部中心**，然后 Apply All Transforms
+7. **导出**：只选模型，单位 m，不导出材质（材质由工程按贴图生成）
+8. **放进** `DropHere/`，回 Unity 按 `1`
+
+### 3.5 验收
 
 - 面数不超上限（超 20% 直接判错）
 - 最大边不超过参考尺寸的 1.3 倍
-- 有 UV、轴心在底部、三张贴图齐全
+- 有 UV、轴心在底部、Albedo 必须有（缺 Normal/Mask 会警告）
 - 美术：剪影可读、比例可信、五件风格统一
+
+### 3.6 常见错误
+
+| 现象 | 原因 |
+| --- | --- |
+| 五件比例忽大忽小 | 没按米制建，或参照立方体没放对 |
+| 宝箱法线全是脏边 | 高模直接减面，没有重新拓扑 |
+| 贴图糊 | 用 512 的图硬撑，或者 UV 拉伸严重 |
+| 模型歪 | 导出前没 Apply Transform |
 
 ---
 
-## 3. 课题二 · 材质
+## 4. 课题二 · 材质
 
 **目标**：掌握 PBR 贴图绘制、通道打包、UV 展开与铺设。
 
-| 类型 | 文件 | 说明 |
-| --- | --- | --- |
-| 可平铺 ×3 | `rock` / `metal` / `wood` | 必须四边无缝 |
-| 贴模型 ×2 | `crate` / `pillar` | 用工程提供的模型，**清空原 UV 重新展** |
+### 4.1 放到哪
 
-### 你要做什么
+`Assets/Tasks/Task2_Materials/DropHere/`
 
-**三套平铺材质**
+### 4.2 文件清单（15 个）
 
-1. 在 DCC 或 Substance 里做无缝材质，四边必须能接上
-2. 导出 `rock_Albedo.png` / `rock_Normal.png` / `rock_MaskMap.png`（`metal`、`wood` 同理）
-3. 1024 × 1024，MaskMap 的 R 填金属度、G 填 1、A 填光滑度
+| id | 贴图 | 类型 | 说明 |
+| --- | --- | --- | --- |
+| `rock` | `rock_Albedo.png` `rock_Normal.png` `rock_MaskMap.png` | 可平铺 | 岩石 |
+| `metal` | `metal_*.png` | 可平铺 | 金属 |
+| `wood` | `wood_*.png` | 可平铺 | 木材 |
+| `crate` | `crate_*.png` | 贴模型 | 用工程给的 `Base/Crate.fbx` |
+| `pillar` | `pillar_*.png` | 贴模型 | 用工程给的 `Base/Pillar.fbx` |
 
-**两套模型材质**
+**命名规则**：和课题一一样，`<id>_Albedo.png` / `<id>_Normal.png` / `<id>_MaskMap.png`。
+例如 `rock` → `rock_Albedo.png`、`rock_Normal.png`、`rock_MaskMap.png`。
+
+**只交贴图，不交模型。** 1024 × 1024，必须 2 的幂。
+
+### 4.3 三套平铺怎么做
+
+1. 用 Substance Designer / Sampler，或者在 PS 里画
+2. **必须四边无缝**：PS 里用「滤镜 → 其它 → 位移」把图偏移半张，接缝会跑到中间，补好再偏移回去
+3. 在预览里看：三个球体按 2×2 平铺贴，接缝一眼能看出来
+4. MaskMap 的 G 通道填 255（平铺材质没有 AO）
+
+### 4.4 两套模型怎么做
 
 1. 导入 `Base/Crate.fbx` 和 `Base/Pillar.fbx`
-2. **删掉原来的 UV**，重新展一次——纹素密度要均匀（1 米约 512–1024 像素）
-3. 木箱的木板缝要对齐 UV 缝，石柱的接缝尽量藏在侧面
-4. 按 `<id>_Albedo/_Normal/_MaskMap.png` 命名导出
+2. **删掉原来的 UV**（这两个模型自带一套 UV，是给你练手的，别直接用）
+3. 重新展 UV：
+   - 木箱：按木板分块，接缝藏在木板缝里
+   - 石柱：柱身环形展开，接缝转到背面
+4. 控制纹素密度：**1 米约 512–1024 像素**，整个模型要均匀
+5. 画三张贴图，Albedo 里可以带木纹和磨损
+6. 只导出贴图，不导出模型
 
-**全部放进** `Task2_Materials/DropHere/`，回 Unity 按 `2`：
-三个球体看平铺接缝，木箱和石柱看你贴模型的效果。
-
-### 验收
+### 4.5 验收
 
 - 五套的 Albedo 齐全；法线/Mask 缺失会警告
 - 法线图类型是 Normal Map，法线和 Mask 的 sRGB 关闭
 - 美术：平铺无缝、纹素密度均匀、五套材质风格协调
 
+### 4.6 常见错误
+
+| 现象 | 原因 |
+| --- | --- |
+| 材质发灰、细节糊 | 法线图没关 sRGB |
+| 平铺有明显接缝 | 四边像素不连续 |
+| 木箱有的地方糊有的地方锐 | 纹素密度不均 |
+| 金属像塑料 | Metallic 没填或 Smoothness 全 0 |
+
 ---
 
-## 4. 课题三 · 场景美化
+## 5. 课题三 · 场景美化
 
 **题目**：废弃的炼金工坊一角
 
-### 工程提供
+### 5.1 工程提供
 
 | 文件 | 说明 |
 | --- | --- |
@@ -166,7 +274,7 @@ Assets/Tasks/Task4_Character/DropHere/
 
 素材是 **CC0**（Kenney Mini Dungeon），可以随便改。
 
-### 你要做什么
+### 5.2 你要做什么
 
 **第 0 步 · 先看清起点**
 
@@ -188,7 +296,7 @@ Assets/Tasks/Task4_Character/DropHere/
 | 墙 | `wall` / `wall-half`；窗洞位置用 `wall-opening` 或直接留空 |
 | L 形隔断 | `wall-narrow` 或 `wood-support` 搭一个木结构 |
 | 炼金炉 | `column` + `rocks` 堆叠，或保留体块外面包一层 |
-| 工作台 | `table`，上面摆 `potion` / `pot` / `books` 之类 |
+| 工作台 | `table`，上面摆 `potion` / `pot` 之类 |
 | 货架 | `wood-support` + `banner` |
 | 平台 | `stairs` 或地砖抬高 |
 
@@ -230,9 +338,9 @@ Assets/Tasks/Task4_Character/DropHere/
 `Task3_Diorama/DropHere/`，回 Unity 按 `3`：
 
 - 底部会显示面数、材质数、包围盒
-- 超过 30k 面 / 4 套材质 / 4.5 m 包围盒会变红
+- 超限会在自检里标出来：面数超过 36,000 或材质超过 6 套直接判错，包围盒超过 4.5 m 报警告
 
-### 交付
+### 5.3 交付
 
 ```
 DropHere/
@@ -246,16 +354,16 @@ DropHere/
 | 材质 | 4 套 |
 | 包围盒 | 4.5 × 4.5 × 4.5 |
 
-### 验收
+### 5.4 验收
 
 - 技术：面数、材质数、包围盒不超限
 - 美术：构图有视觉中心、前中后景层次清楚、材质统一、打光能看出主光方向
 
 ---
 
-## 5. 课题四 · 骨骼动画
+## 6. 课题四 · 骨骼动画
 
-### 工程提供
+### 6.1 工程提供
 
 | 文件 | 说明 |
 | --- | --- |
@@ -266,16 +374,37 @@ DropHere/
 - 你**不需要**建模、绑定、刷权重，只负责动画
 - 角色约 2.4 单位高，脚底在原点下方约 0.2，预览会自动对齐地面
 
-### 你要做什么
+### 6.2 放到哪 / 文件清单（3 个）
+
+`Assets/Tasks/Task4_Character/DropHere/`
+
+| 文件名 | 时长 | 24 fps 帧数 | 循环 |
+| --- | --- | --- | --- |
+| `Idle.fbx` | 1.0–1.2 s | 24–29 帧 | 是 |
+| `Run.fbx` | 0.6–0.8 s | 15–19 帧 | 是 |
+| `StartRun.fbx` | 0.2–0.3 s | 5–7 帧 | 否 |
+
+文件名大小写严格按上面写。也可以交一个 `Animation.fbx` 里带三个同名 take（进阶用法）。
+
+### 6.3 步骤
 
 1. **导入** `Base/Dummy.fbx`，不要改骨骼数量、名字和层级
-2. **做三个 Action**：`Idle`（1.0–1.2 s）、`Run`（0.6–0.8 s）、`StartRun`（0.2–0.3 s）
-3. **24 fps**，原地动画，不要 Root Motion
-4. `StartRun` 的最后一帧要和 `Run` 的第一帧对得上
-5. 导出三个文件：`Idle.fbx` / `Run.fbx` / `StartRun.fbx`（只选骨骼和动画）
-6. 放进 `Task4_Character/DropHere/`，回 Unity 按 `4`，空格切换 Idle/Run
+2. **场景帧率设 24**（Blender：Output Properties → Frame Rate）
+3. **做 Idle**：1.0–1.2 s，呼吸起伏，首尾姿势对齐
+4. **做 Run**：0.6–0.8 s，至少一个完整步幅，首尾对齐
+5. **做 StartRun**：0.2–0.3 s，从站姿到跑姿，**最后一帧要和 Run 的第一帧一致**
+6. **原地**：根骨骼不要有位移，不要开 Root Motion
+7. **导出**：三个动作分别导出三个 FBX。Blender 里在 FBX 导出的
+   `Animation → Animation Mode` 选 **Active Action**，只导当前动作
+8. **放进** `DropHere/`，回 Unity 按 `4`，空格切换 Idle/Run
 
-### 状态机（助教维护，你不用管）
+### 6.4 循环动画怎么接
+
+- 第 1 帧和第 N 帧的姿势要一样，但**不要**把第 1 帧原样复制到第 N 帧
+- 正确做法：关键帧范围是 1..N，播放器从 N 回到 1 时靠插值衔接
+- 检查方法：在 DCC 里循环播放，盯着手脚有没有跳一下
+
+### 6.5 状态机（助教维护，你不用管）
 
 ```
 Idle --(Speed>0.1)--> StartRun --(exitTime 0.9)--> Run --(Speed<0.1)--> Idle
@@ -283,14 +412,24 @@ Idle --(Speed>0.1)--> StartRun --(exitTime 0.9)--> Run --(Speed<0.1)--> Idle
 
 没交 `StartRun` 时会直接 `Idle -> Run`，不会卡死。
 
-### 验收
+### 6.6 验收
 
 - 技术：三个 clip 名字正确、时长在区间内、Idle/Run 循环、StartRun 不循环
 - 美术：重心转移可信、跑步循环首尾自然、起步有加速感
 
+### 6.7 常见错误
+
+| 现象 | 原因 |
+| --- | --- |
+| 导入后找不到动画 | 文件名不是 Idle/Run/StartRun |
+| 每跑一圈抖一下 | 首尾姿势不一致 |
+| 起步瞬间弹一下 | StartRun 第一帧和 Idle 差太远 |
+| 角色滑步 | 开了 Root Motion 或位移烘进了动画 |
+| 动作变形 | 改了骨骼名字或增删了骨骼 |
+
 ---
 
-## 6. 预览与自检
+## 7. 预览与自检
 
 打开 `Assets/Scenes/Preview3D.unity` → **Play**：
 
@@ -316,24 +455,26 @@ Idle --(Speed>0.1)--> StartRun --(exitTime 0.9)--> Run --(Speed<0.1)--> Idle
 
 ---
 
-## 7. 评分方式
+## 8. 评分方式
 
 技术自检是**门槛**：不过就打回，不计分；过了之后只看美术。
 
 ---
 
-## 8. 常见问题
+## 9. 常见问题
 
 | 现象 | 原因 | 处理 |
 | --- | --- | --- |
-| 按 `3` 只有白模 | 还没交 `Diorama.fbx`，这是起点 | 按第 4 节的步骤做 |
+| 按 `3` 只有白模 | 还没交 `Diorama.fbx`，这是起点 | 按第 5 节的步骤做 |
+| 按 `1`/`2` 是空的 | 还没交文件 | 按文件清单检查命名和路径 |
 | 模型全黑 | 材质 Shader 不兼容，或法线图 sRGB 没关 | 用 URP/Lit；法线图设为 Normal Map |
 | 模型是粉的 | 材质 Shader 不是 URP 版本 | 换 `Universal Render Pipeline/Lit` |
 | 交的 FBX 在 Unity 里是白模 | 导出时没嵌入贴图 | 重新导出，勾 Embed Textures |
 | 模型悬空 / 陷地 | 轴心不在底部 | 在 DCC 里把轴心移到脚底/底部中心 |
 | 比例不对 | 导出时没按米制 | 统一 1 unit = 1m，重新导出 |
 | 面是黑的 | 负缩放导致法线翻转 | 应用变换，别用镜像缩放 |
+| 文件名识别不到 | 大小写不对，或用了中文/空格 | 按表里的 id 重新命名 |
 | 识别不出动画 | 文件名和 take 名都不是 Idle/Run/StartRun | 按 `Idle.fbx` / `Run.fbx` / `StartRun.fbx` 命名 |
-| 每跑一圈抖一下 | 首尾姿势不一致 | 让最后一帧和第一帧完全对齐 |
+| 每跑一圈抖一下 | 首尾姿势不一致 | 让第一帧和最后一帧姿势对齐 |
 | 贴图发灰 | 法线图没关 sRGB | 导入时关掉 sRGB |
-| 平铺有接缝 | 四边像素不连续 | 用平铺工具重新处理边缘 |
+| 平铺有接缝 | 四边像素不连续 | 用位移滤镜检查并修补 |
