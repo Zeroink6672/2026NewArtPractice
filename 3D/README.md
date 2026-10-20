@@ -1,56 +1,109 @@
-# 3D 课题规范（编写中）
+# 3D 课题规范
 
 > 工程目录：`3D/` · Unity **2022.3.62f3c1** · **URP 14.0.6** · **Linear** 色彩空间
 > 仓库流程（Fork / 克隆 / 分支 / PR）见[根目录 README](../README.md)
+> 每个课题按 **7–10 天（含自学）** 设计，任选其一。
 
 ## 当前状态
 
-工程骨架已经搭好：
+- 工程骨架已就绪：URP 管线资产、Linear 色彩空间、`Assets/Scenes/Preview3D.unity`
+- **课题四（骨骼动画）已就绪**，基础角色已入库
+- 课题一~三的契约与工具链待接入
 
-- URP 管线资产：`Assets/Settings/URP-Pipeline.asset`、`UniversalRenderer.asset`
-- 预览场景：`Assets/Scenes/Preview3D.unity`（相机 + 平行光 + `PreviewRoot`）
-- 色彩空间：Linear（3D PBR 必须）
+---
 
-**课题契约（`task.json`）、导入预设、材质/Prefab 生成器、自检工具尚未接入**，
-下面四个课题是已确定的方向，验收规则和目录结构定稿后会补齐。
+## 课题四 · 骨骼动画
 
-## 计划的四个课题
+### 工程提供的基础角色
+
+| 文件 | 说明 |
+| --- | --- |
+| `Assets/Tasks/Task4_Character/Base/Dummy.fbx` | 白色低模假人，Humanoid 骨架：22 根人体骨骼 / 43 根骨架节点 |
+| `Assets/Tasks/Task4_Character/Base/BaseCharacter.prefab` | 已挂 Animator 与材质，可直接拖进场景 |
+| `Assets/Tasks/Task4_Character/Base/README.txt` | 素材来源与许可 |
+
+- 素材许可是 **CC0**（公共领域），可以放心使用与修改
+- 你**不需要**建模、绑定、刷权重，只负责动画
+- 角色约 2.4 个单位高，脚底在原点下方约 0.2，预览会自动对齐地面
+- **不要修改 `Base/` 目录**，它是全班统一的基础角色
+
+### 交付
+
+放进 `Assets/Tasks/Task4_Character/DropHere/`，只交一个文件：
+
+```
+DropHere/Animation.fbx
+```
+
+一个 FBX 带三个 take，**take 名字必须正好是 `Idle` / `Run` / `StartRun`**。
+
+| take | 时长 | 循环 | 要求 |
+| --- | --- | --- | --- |
+| `Idle` | 1.0–1.2 秒 | 是 | 待机呼吸，重心有起伏，首尾无缝 |
+| `Run` | 0.6–0.8 秒 | 是 | 跑步循环，至少一个完整步幅，首尾无缝 |
+| `StartRun` | 0.2–0.3 秒 | 否 | 从静止到跑起来的起步过渡 |
+
+制作要求：
+
+- **24 fps**，原地动画（In Place），**不要 Root Motion**
+- `StartRun` 的最后一帧要和 `Run` 的第一帧对得上，否则起步会跳
+- 起步要有重心转移：身体前倾、脚蹬地、手臂摆动跟上
+- 只做起步、不做收步——收步由引擎 0.1 秒交叉淡入完成
+
+### 状态机（助教维护，你不用管）
+
+```
+Idle --(Speed>0.1)--> StartRun --(exitTime 0.9)--> Run --(Speed<0.1)--> Idle
+```
+
+如果 `StartRun` 没有交，生成器会跳过这个状态、直接 `Idle -> Run`，不会把角色卡死。
+
+### 验收
+
+**技术**（工具判定）：
+
+- `Animation.fbx` 存在，能识别出 3 个 take，名字正确
+- 每个 take 的时长在区间内，Idle/Run 标为循环、StartRun 不循环
+- 没有 Root Motion，没有多余骨骼
+
+**美术**（助教判定）：
+
+- 重心转移可信，不是"上半身单独晃"
+- 跑步循环首尾衔接自然，没有每圈一次的抖动
+- 起步动作能看出"从静止到加速"的力度变化
+
+### 常见错误
+
+| 现象 | 原因 | 处理 |
+| --- | --- | --- |
+| 导入后找不到动画 | take 名字不对（如 `Armature\|Idle`） | 在 DCC 里把动作命名成 `Idle`/`Run`/`StartRun` |
+| 每跑一圈抖一下 | 首尾姿势不一致 | 让最后一帧和第一帧完全对齐 |
+| 起步瞬间弹一下 | `StartRun` 第一帧和 Idle 差别太大 | 起步第一帧接近 Idle 的站姿 |
+| 角色滑步 | 开了 Root Motion 或位移烘进了动画 | 改成原地，位移交给引擎 |
+
+---
+
+## 课题一~三（规范待定稿）
 
 | 课题 | 方向 | 交付量 |
 | --- | --- | --- |
-| 一 · 道具建模 | 从零建模 + 1 件高模烘焙 | 5 件，其中 1 件做高模→低模（法线 + AO） |
-| 二 · 材质 | 贴图绘制与铺设 | 5 套：3 套可平铺 + 2 套贴在指定模型上 |
-| 三 · 场景 | 找素材 + 布景 + 打光 | 4m×4m 小样，外部素材占比 ≤ 30%，交素材来源清单 |
-| 四 · 骨骼动画 | 蒙皮与动画 | Idle / Run / StartRun 三个 clip，同一个角色 |
+| 一 · 道具建模 | 从零建模 + 1 件高模烘焙 | 5 件，其中 1 件做高模→低模 |
+| 二 · 材质 | 贴图绘制与铺设 | 5 套：3 套可平铺 + 2 套贴模型 |
+| 三 · 场景 | 找素材 + 布景 + 打光 | 4m×4m 小样，外部素材 ≤ 30% |
 
-课题四的 `StartRun` 是 Idle → Run 的起步过渡：状态机是
-`Idle --(Speed>0.1)--> StartRun --(exitTime 0.9)--> Run --(Speed<0.1)--> Idle`。
-如果 `StartRun` 没有交，生成器会跳过该状态、直接 Idle→Run，不会把角色卡死。
+---
 
-## 工程约定（先按这个准备素材）
+## 工程约定
 
 | 项 | 约定 |
 | --- | --- |
-| 单位 | 1 Unity unit = 1 米，按真实尺度 |
+| 单位 | 1 Unity unit = 1 米 |
 | 轴向 | Y 轴向上，`+Z` 朝前 |
 | 轴心 | 道具在底部中心，角色在脚底中心 |
-| 导出 | FBX，应用全部变换（Apply All Transforms），不要带缩放/旋转 |
-| 贴图 | 1024（主道具可 2048），2 的幂 |
-| 法线 | Tangent Space，导入时类型必须设为 Normal Map |
+| 导出 | FBX，应用全部变换（Apply All Transforms），不带缩放/旋转 |
+| 贴图 | 1024（主道具可 2048），必须是 2 的幂 |
+| 法线 | Tangent Space，导入类型设为 Normal Map |
 | 源文件 | `.blend` / `.max` 一律不提交 |
-
-## 目录规划（待建）
-
-```
-Assets/
-├── Tasks/
-│   ├── Task1_Props/DropHere/
-│   ├── Task2_Materials/DropHere/
-│   ├── Task3_Diorama/DropHere/
-│   └── Task4_Character/<State>/
-├── Scenes/Preview3D.unity
-└── Scripts/
-```
 
 生成物（预览数据、材质、Prefab）不入库，打开工程时自动重建。
 
@@ -58,8 +111,8 @@ Assets/
 
 | 现象 | 原因 | 处理 |
 | --- | --- | --- |
-| 模型全黑 | 材质用了不兼容的 Shader，或法线贴图 sRGB 没关 | 用 URP/Lit；法线图设为 Normal Map |
+| 模型全黑 | 材质 Shader 不兼容，或法线图 sRGB 没关 | 用 URP/Lit；法线图设为 Normal Map |
 | 模型是粉的 | 材质 Shader 不是 URP 版本 | 换 `Universal Render Pipeline/Lit` |
-| 模型悬空 / 陷地 | 轴心不在底部 | 在 DCC 里把轴心移到脚底/底部中心再导出 |
+| 模型悬空 / 陷地 | 轴心不在底部 | 在 DCC 里把轴心移到脚底再导出 |
 | 比例不对 | 导出时没按米制 | 统一 1 unit = 1m，重新导出 |
 | 面是黑的 | 负缩放导致法线翻转 | 应用变换，别用镜像缩放 |

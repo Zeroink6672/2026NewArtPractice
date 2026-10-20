@@ -1,0 +1,48 @@
+{
+  "taskId": "task4_character",
+  "title": "骨骼动画",
+  "contractVersion": 1,
+  "summary": "用工程提供的绑定角色完成 Idle / Run / StartRun 三段动画，不需要建模和绑定。",
+  "base": {
+    "prefab": "Assets/Tasks/Task4_Character/Base/BaseCharacter.prefab",
+    "source": "Assets/Tasks/Task4_Character/Base/Dummy.fbx",
+    "license": "CC0",
+    "note": "已配置为 Humanoid，直接引用这个 FBX 做动画；不要改工程里的 Base 目录。"
+  },
+  "delivery": {
+    "scanRoot": "Assets/Tasks/Task4_Character/DropHere",
+    "filePattern": "*.fbx",
+    "fileName": "Animation.fbx",
+    "frameRate": 24,
+    "rootMotion": "In Place",
+    "takeNames": ["Idle", "Run", "StartRun"],
+    "note": "一个 FBX 三个 take，take 名字必须正好是 Idle / Run / StartRun。"
+  },
+  "clips": [
+    {
+      "name": "Idle",
+      "loop": true,
+      "minSeconds": 1.0,
+      "maxSeconds": 1.2,
+      "note": "待机呼吸，重心有起伏，首尾无缝"
+    },
+    {
+      "name": "Run",
+      "loop": true,
+      "minSeconds": 0.6,
+      "maxSeconds": 0.8,
+      "note": "跑步循环，至少一个完整步幅"
+    },
+    {
+      "name": "StartRun",
+      "loop": false,
+      "minSeconds": 0.2,
+      "maxSeconds": 0.3,
+      "note": "起步过渡，最后一帧要和 Run 的第一帧对得上"
+    }
+  ],
+  "animator": {
+    "parameters": { "Speed": "float" },
+    "note": "Idle --(Speed>0.1)--> StartRun --(exitTime 0.9)--> Run --(Speed<0.1)--> Idle；没交 StartRun 时直接 Idle->Run，不会卡死"
+  }
+}
