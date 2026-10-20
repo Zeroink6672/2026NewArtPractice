@@ -104,3 +104,6 @@ desktop.ini
 /Assets/Tasks/Task2_Character/Animations/
 /Assets/Tasks/Task2_Character/Character.controller*
 /Assets/Tasks/Task2_Character/Character.prefab*
+
+# 课题四生成物
+/Assets/Tasks/Task4_Character/Animation.controller*

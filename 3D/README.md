@@ -7,7 +7,7 @@
 ## 当前状态
 
 - 工程骨架已就绪：URP 管线资产、Linear 色彩空间、`Assets/Scenes/Preview3D.unity`
-- **课题四（骨骼动画）已就绪**，基础角色已入库
+- **课题四（骨骼动画）已就绪**：基础角色、导入校验、状态机、预览全部接通
 - 课题一~三的契约与工具链待接入
 
 ---
@@ -29,13 +29,18 @@
 
 ### 交付
 
-放进 `Assets/Tasks/Task4_Character/DropHere/`，只交一个文件：
+放进 `Assets/Tasks/Task4_Character/DropHere/`，推荐**每个动画一个文件**：
 
 ```
-DropHere/Animation.fbx
+DropHere/
+├── Idle.fbx
+├── Run.fbx
+└── StartRun.fbx
 ```
 
-一个 FBX 带三个 take，**take 名字必须正好是 `Idle` / `Run` / `StartRun`**。
+文件名就是动画名，不用管 DCC 里 Action 叫什么——Blender 导出的 take 名经常是 `Dummy RigAction` 这种，用文件名最省事。
+
+也可以交一个 `Animation.fbx`，里面带三个同名 take（进阶用法，需要把 Action 命名成 `Idle` / `Run` / `StartRun`）。
 
 | take | 时长 | 循环 | 要求 |
 | --- | --- | --- | --- |
@@ -58,6 +63,18 @@ Idle --(Speed>0.1)--> StartRun --(exitTime 0.9)--> Run --(Speed<0.1)--> Idle
 
 如果 `StartRun` 没有交，生成器会跳过这个状态、直接 `Idle -> Run`，不会把角色卡死。
 
+### 预览与自检
+
+打开 `Assets/Scenes/Preview3D.unity` → **Play**：
+
+| 按键 | 作用 |
+| --- | --- |
+| `空格` | 切换 Idle / Run |
+| `R` | 回到 Idle，转台归零 |
+
+菜单 `Tools / 美术课题 / 自检（3D）` 会输出报告：缺哪个动画、时长对不对。
+放完 FBX 不用点菜单，编辑器会自动重新扫描，Console 打一行总览。
+
 ### 验收
 
 **技术**（工具判定）：
@@ -76,7 +93,7 @@ Idle --(Speed>0.1)--> StartRun --(exitTime 0.9)--> Run --(Speed<0.1)--> Idle
 
 | 现象 | 原因 | 处理 |
 | --- | --- | --- |
-| 导入后找不到动画 | take 名字不对（如 `Armature\|Idle`） | 在 DCC 里把动作命名成 `Idle`/`Run`/`StartRun` |
+| 识别不出动画 | 文件名和 take 名都不是 Idle/Run/StartRun | 按 `Idle.fbx` / `Run.fbx` / `StartRun.fbx` 命名 |
 | 每跑一圈抖一下 | 首尾姿势不一致 | 让最后一帧和第一帧完全对齐 |
 | 起步瞬间弹一下 | `StartRun` 第一帧和 Idle 差别太大 | 起步第一帧接近 Idle 的站姿 |
 | 角色滑步 | 开了 Root Motion 或位移烘进了动画 | 改成原地，位移交给引擎 |

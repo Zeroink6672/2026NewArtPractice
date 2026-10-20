@@ -3,7 +3,7 @@
   "title": "骨骼动画",
   "contractVersion": 1,
   "summary": "用工程提供的绑定角色完成 Idle / Run / StartRun 三段动画，不需要建模和绑定。",
-  "base": {
+  "baseCharacter": {
     "prefab": "Assets/Tasks/Task4_Character/Base/BaseCharacter.prefab",
     "source": "Assets/Tasks/Task4_Character/Base/Dummy.fbx",
     "license": "CC0",
@@ -12,11 +12,10 @@
   "delivery": {
     "scanRoot": "Assets/Tasks/Task4_Character/DropHere",
     "filePattern": "*.fbx",
-    "fileName": "Animation.fbx",
     "frameRate": 24,
     "rootMotion": "In Place",
     "takeNames": ["Idle", "Run", "StartRun"],
-    "note": "一个 FBX 三个 take，take 名字必须正好是 Idle / Run / StartRun。"
+    "note": "推荐每个动画一个文件：Idle.fbx / Run.fbx / StartRun.fbx；也可以一个 Animation.fbx 里带三个同名 take。"
   },
   "clips": [
     {
@@ -40,9 +39,5 @@
       "maxSeconds": 0.3,
       "note": "起步过渡，最后一帧要和 Run 的第一帧对得上"
     }
-  ],
-  "animator": {
-    "parameters": { "Speed": "float" },
-    "note": "Idle --(Speed>0.1)--> StartRun --(exitTime 0.9)--> Run --(Speed<0.1)--> Idle；没交 StartRun 时直接 Idle->Run，不会卡死"
-  }
+  ]
 }
