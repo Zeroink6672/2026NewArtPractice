@@ -34,7 +34,12 @@
 1. 打开助教发的仓库主页，点右上角 **Fork**
 2. 下一页直接点 **Create fork**
 3. 完成后你会停在 `你的用户名/2026NewArtPractice`，**之后所有操作都在这个副本上**
+4. 副本默认停在 **`dev`** 分支——这是学员基线，**不要切到 `main`**
 
+> 仓库有两条长期分支：
+> - **`dev`**：学员基线。助教在这里更新契约（`task.json`）和范例，你的分支从这里拉
+> - **`main`**：冻结快照，只在里程碑时更新，平时不用管
+>
 > 为什么要 Fork：这是公开仓库，只有仓库所有者能直接往里推。Fork 出来的副本属于你，
 > 你随便提交；最后用 Pull Request 把改动交给助教。
 >
@@ -216,7 +221,7 @@ Console 里会打一行总览（有错误时是黄色）：
 | 图片只有 100 多字节，Unity 导入失败 | 没装 / 没启用 Git LFS | `git lfs install` 然后 `git lfs pull` |
 | 打开工程一片粉色 | 渲染管线或材质不匹配 | 确认用 `ProjectVersion.txt` 的版本打开；不要删 `Packages/` |
 | 状态机里一堆 Missing | `.meta` 没同步，或文件被改名 | 删掉本地工程重新 clone；不要手动改任何 GUID |
-| 找不到 `DropHere` 之类的文件夹 | 没拉最新的 `main` | `git pull`；确认克隆的是仓库根 |
+| 找不到 `DropHere` 之类的文件夹 | 没拉最新的 `dev` | `git pull`；确认克隆的是仓库根 |
 | 图糊 / 锯齿严重 | 交付尺寸不对，靠放大凑数 | 按规范尺寸重新导出 |
 | 动画播放时角色抖动 | 同状态各帧画布尺寸或脚底位置不一致 | 统一画布，脚底对齐底边中点 |
 | 按 Play 只有一个深灰背景 | 预览数据没生成 | 菜单 `Tools / 美术课题 / 重新生成预览数据` |
@@ -262,7 +267,7 @@ GitHub Desktop → **Current Branch → New Branch**，名字用 **`taskX-拼音
 1. 推送后 GitHub Desktop 会出现 **Create Pull Request**，点它
 2. 浏览器打开比较页，**核对三行**：
    - `base repository` = 助教的仓库（**不是**你自己的 fork）
-   - `base` = `main`
+   - `base` = `dev`
    - `compare` = `你的账号:task1-zhangsan`
 3. 标题写 `task1-张三`，描述里贴三样东西：
    - Console 里「美术课题自检」那段结果
@@ -280,14 +285,14 @@ GitHub Desktop → **Current Branch → New Branch**，名字用 **`taskX-拼音
 
 > 不要点 Merge，合并由助教处理。
 
-### 7.6 助教更新了 main 怎么办
+### 7.6 助教更新了 dev 怎么办
 
 只有助教改了 `task.json` 或加了范例时才需要，平时不用管：
 
-1. 网页上打开你的 fork，点 **Sync fork → Update branch**
+1. 网页上打开你的 fork，点 **Sync fork → Update branch**（同步的是 `dev`）
 2. GitHub Desktop 点 **Fetch origin**
-3. 切到 `main` → **Pull origin**
-4. 切回自己分支 → **Branch → Merge into Current Branch** → 选 `main`
+3. 切到 `dev` → **Pull origin**
+4. 切回自己分支 → **Branch → Merge into Current Branch** → 选 `dev`
 
 只往自己目录加文件的同学，冲突概率基本为零。
 
@@ -308,7 +313,10 @@ GitHub Desktop → **Current Branch → New Branch**，名字用 **`taskX-拼音
 
 ## 9. 给助教
 
-- 骨架与契约改动请直接改 `main`，改完通知所有人重新拉取
+- **两条长期分支**：
+  - `dev` 是学员基线，改 `task.json`、加范例都提交到这里，改完通知学员 Sync fork
+  - `main` 是冻结快照，里程碑时把 `dev` 合进来并打 tag（`git tag v0.2`）
+  - 分支不是备份：真正能还原的是 **tag**，`main` 漂了就只能靠 tag 找回来
 - 新增/调整必需要素，改 `task.json` 即可，预览与自检会读它
 - 编辑器工具都在 `Assets/Scripts/` 下：
   - `Runtime/PreviewCatalog.cs` 数据模型，`Runtime/PreviewBootstrap.cs` 运行时预览
@@ -319,7 +327,10 @@ GitHub Desktop → **Current Branch → New Branch**，名字用 **`taskX-拼音
   每台机器打开工程时自动重建——所以合并 PR 时不会有生成物冲突
 - 收作业就看 PR 列表：`Files changed` 里应该只有 `Assets/Tasks/<任务>/` 下的图片；
   出现别的目录说明学生改错了地方，直接打回
-- 验收阶段不用合并；要归档再合。合并后 clone 一次 `main`，确认图片不是 100 多字节
+- **学生 PR 默认只验收、不合并**：同一课题的文件名是固定的（Task1 就那 16 个），
+  两份同课题的 PR 合进同一个分支会互相覆盖，Task2 更是只能留一份
+- 真要归档，按人复制到 `Assets/Tasks/_Archive/<昵称>/`（在扫描目录之外，不影响预览）
+- 要发版时再把 `dev` 合进 `main`。合并后 clone 一次 `main`，确认图片不是 100 多字节
   （fork + LFS 唯一需要盯的地方）
 - 改了 `task.json` 要提醒学生 Sync fork，否则他们本地还是旧契约
 - `Examples/` 目前为空，需要补 1~2 组格式范例
