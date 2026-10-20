@@ -1,10 +1,11 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace ArtPractice3D.Preview
 {
     /// <summary>
-    /// 3D 预览：进入 Play 自动读取 PreviewData3D，摆放基础角色并挂上生成的状态机。
-    /// 场景里不需要摆任何东西。
+    /// 3D 预览：进入 Play 自动读取 PreviewData3D。
+    /// [3] 场景（课题三） / [4] 骨骼动画（课题四），转台自动旋转。
     /// </summary>
     public class Preview3DBootstrap : MonoBehaviour
     {
@@ -12,9 +13,13 @@ namespace ArtPractice3D.Preview
 
         private PreviewData3D _data;
         private Transform _turntable;
+        private GameObject _current;
         private Animator _animator;
-        private float _yaw;
+        private Camera _cam;
+
+        private int _task = 3;
         private bool _running;
+        private float _yaw;
 
         private GUIStyle _header;
         private GUIStyle _small;
@@ -34,32 +39,20 @@ namespace ArtPractice3D.Preview
         {
             _data = Resources.Load<PreviewData3D>(ResourcePath);
             _turntable = new GameObject("Turntable").transform;
-
-            if (_data == null || _data.basePrefab == null) return;
-
-            var character = Instantiate(_data.basePrefab, _turntable);
-            character.name = "BaseCharacter";
-
-            var renderer = character.GetComponentInChildren<Renderer>();
-            if (renderer != null)
-            {
-                // 素材脚底在原点下方约 0.2，这里对齐地面
-                float offset = -renderer.bounds.min.y;
-                character.transform.localPosition = new Vector3(0f, offset, 0f);
-            }
-
-            _animator = character.GetComponent<Animator>();
-            if (_animator != null && _data.controller != null)
-                _animator.runtimeAnimatorController = _data.controller;
+            _cam = Camera.main;
+            Rebuild();
         }
 
         private void Update()
         {
-            _yaw += 18f * Time.deltaTime;
+            _yaw += 12f * Time.deltaTime;
             if (_turntable != null)
                 _turntable.rotation = Quaternion.Euler(0f, _yaw, 0f);
 
-            if (Input.GetKeyDown(KeyCode.Space))
+            if (Input.GetKeyDown(KeyCode.Alpha3)) SwitchTask(3);
+            if (Input.GetKeyDown(KeyCode.Alpha4)) SwitchTask(4);
+
+            if (_task == 4 && Input.GetKeyDown(KeyCode.Space))
             {
                 _running = !_running;
                 if (_animator != null) _animator.SetFloat("Speed", _running ? 2f : 0f);
@@ -70,6 +63,112 @@ namespace ArtPractice3D.Preview
                 _running = false;
                 _yaw = 0f;
                 if (_animator != null) _animator.SetFloat("Speed", 0f);
+            }
+        }
+
+        private void SwitchTask(int task)
+        {
+            if (_task == task) return;
+            _task = task;
+            Rebuild();
+        }
+
+        private void Rebuild()
+        {
+            if (_current != null) Destroy(_current);
+            _current = null;
+            _animator = null;
+            _running = false;
+
+            if (_data == null) return;
+
+            if (_task == 3) BuildScene();
+            else BuildCharacter();
+        }
+
+        private void BuildScene()
+        {
+            if (_data.task3 == null || _data.task3.model == null) return;
+
+            _current = Instantiate(_data.task3.model, _turntable);
+            _current.name = "Diorama";
+            _current.transform.localPosition = Vector3.zero;
+            ConvertMaterials(_current);
+
+            FrameCamera(new Vector3(0f, 3.2f, -6.5f), new Vector3(0f, 1.2f, 0f), 40f);
+        }
+
+        private void BuildCharacter()
+        {
+            if (_data.basePrefab == null) return;
+
+            _current = Instantiate(_data.basePrefab, _turntable);
+            _current.name = "BaseCharacter";
+
+            var renderer = _current.GetComponentInChildren<Renderer>();
+            if (renderer != null)
+            {
+                float offset = -renderer.bounds.min.y;
+                _current.transform.localPosition = new Vector3(0f, offset, 0f);
+            }
+
+            _animator = _current.GetComponent<Animator>();
+            if (_animator != null && _data.controller != null)
+                _animator.runtimeAnimatorController = _data.controller;
+
+            FrameCamera(new Vector3(0f, 2.4f, -5.2f), new Vector3(0f, 1.2f, 0f), 35f);
+        }
+
+        private void FrameCamera(Vector3 position, Vector3 target, float fov)
+        {
+            if (_cam == null) return;
+            _cam.transform.position = position;
+            _cam.transform.LookAt(target);
+            _cam.fieldOfView = fov;
+        }
+
+        /// <summary>把 FBX 自带的标准材质换成 URP/Lit，避免整屏粉色。</summary>
+        private static void ConvertMaterials(GameObject root)
+        {
+            var lit = Shader.Find("Universal Render Pipeline/Lit");
+            if (lit == null) return;
+
+            var cache = new Dictionary<Material, Material>();
+
+            foreach (var renderer in root.GetComponentsInChildren<Renderer>())
+            {
+                var materials = renderer.sharedMaterials;
+                for (int i = 0; i < materials.Length; i++)
+                {
+                    var source = materials[i];
+                    if (source == null) continue;
+
+                    if (!cache.TryGetValue(source, out var converted))
+                    {
+                        converted = new Material(lit) { name = source.name + " (URP)" };
+
+                        if (source.HasProperty("_MainTex") && source.GetTexture("_MainTex") != null)
+                            converted.SetTexture("_BaseMap", source.GetTexture("_MainTex"));
+
+                        if (source.HasProperty("_BumpMap") && source.GetTexture("_BumpMap") != null)
+                        {
+                            converted.SetTexture("_BumpMap", source.GetTexture("_BumpMap"));
+                            converted.EnableKeyword("_NORMALMAP");
+                        }
+
+                        if (source.HasProperty("_Metallic"))
+                            converted.SetFloat("_Metallic", source.GetFloat("_Metallic"));
+
+                        if (source.HasProperty("_Glossiness"))
+                            converted.SetFloat("_Smoothness", source.GetFloat("_Glossiness"));
+
+                        cache[source] = converted;
+                    }
+
+                    materials[i] = converted;
+                }
+
+                renderer.sharedMaterials = materials;
             }
         }
 
@@ -86,7 +185,7 @@ namespace ArtPractice3D.Preview
             }
 
             GUI.Label(new Rect(20f, 10f, 1400f, 26f),
-                "课题四 · 骨骼动画      [空格] 切换 Idle / Run      [R] 重置      转台自动旋转",
+                "3D 预览      [3] 场景      [4] 骨骼动画      [空格] 切换 Idle/Run      [R] 重置      转台自动旋转",
                 _header);
 
             string status = _data.ErrorCount > 0
@@ -95,7 +194,19 @@ namespace ArtPractice3D.Preview
             GUI.Label(new Rect(20f, 34f, 1400f, 26f), status,
                 _data.ErrorCount > 0 ? _smallError : _header);
 
-            DrawClipList();
+            if (_task == 3) DrawSceneInfo();
+            else DrawClipList();
+        }
+
+        private void DrawSceneInfo()
+        {
+            var info = _data.task3;
+            string text = info != null && info.ready
+                ? $"课题三 · 面数 {info.triangles} · 材质 {info.materials} · 包围盒 {info.size.x:F2} × {info.size.y:F2} × {info.size.z:F2}"
+                : "课题三 · 还没有 Diorama.fbx";
+
+            GUI.Label(new Rect(20f, Screen.height - 40f, 1400f, 24f), text,
+                info != null && info.ready ? _header : _smallError);
         }
 
         private void DrawClipList()
@@ -107,8 +218,7 @@ namespace ArtPractice3D.Preview
             var clips = _data.task4.clips;
             float y = Screen.height - 24f - clips.Count * 20f - 26f;
 
-            GUI.Label(new Rect(20f, y, 700f, 24f),
-                $"clips {present}/{clips.Count}", _header);
+            GUI.Label(new Rect(20f, y, 700f, 24f), $"课题四 · clips {present}/{clips.Count}", _header);
             y += 24f;
 
             foreach (var clip in clips)

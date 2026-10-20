@@ -39,7 +39,7 @@ public static class Task4Pipeline
         AssetDatabase.Refresh();
 
         var data = LoadOrCreate();
-        data.issues.Clear();
+        data.issues.RemoveAll(i => i.task == TaskName);
         data.task4 = new Task4Info();
         data.basePrefab = null;
         data.controller = null;

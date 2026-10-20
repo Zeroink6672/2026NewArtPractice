@@ -35,6 +35,16 @@ namespace ArtPractice3D.Preview
         public List<ClipInfo> clips = new List<ClipInfo>();
     }
 
+    [Serializable]
+    public class Task3Info
+    {
+        public bool ready;
+        public int triangles;
+        public int materials;
+        public Vector3 size;
+        public GameObject model;
+    }
+
     /// <summary>
     /// 3D 工程的预览数据。生成物，不入库；打开工程时自动重建。
     /// </summary>
@@ -45,6 +55,7 @@ namespace ArtPractice3D.Preview
         public GameObject basePrefab;
         public RuntimeAnimatorController controller;
         public Task4Info task4 = new Task4Info();
+        public Task3Info task3 = new Task3Info();
 
         public List<PreviewIssue3D> issues = new List<PreviewIssue3D>();
 

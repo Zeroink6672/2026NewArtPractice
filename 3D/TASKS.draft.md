@@ -165,9 +165,8 @@ DropHere/
 
 ```
 DropHere/
-├── Diorama.fbx
-├── Diorama_Albedo.png / _Normal.png / _MaskMap.png  （可拆成 2–4 套）
-└── final.png           ← 打好光的 1920×1080 渲染图
+├── Diorama.fbx     ← 贴图嵌入 FBX（DCC 导出时勾 Embed Textures）
+└── final.png       ← 打好光的 1920×1080 渲染图
 ```
 
 **验收要点**

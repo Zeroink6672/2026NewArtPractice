@@ -4,12 +4,13 @@ using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
 
-/// <summary>3D 课题自检：重新生成 + 逐条报告。</summary>
-public static class Task4SelfCheck
+/// <summary>3D 课题自检：跑完课题三、课题四的生成，再统一报告。</summary>
+public static class ArtPractice3DSelfCheck
 {
     [MenuItem("Tools/美术课题/自检（3D）", false, 11)]
     public static void Run()
     {
+        Task3Pipeline.Generate();
         Task4Pipeline.Generate();
 
         var data = AssetDatabase.LoadAssetAtPath<PreviewData3D>(Task4Pipeline.DataAssetPath);
@@ -34,8 +35,19 @@ public static class Task4SelfCheck
         var sb = new StringBuilder();
         sb.AppendLine("========== 3D 课题自检 ==========");
         sb.AppendLine("Unity " + data.generatedBy);
-        sb.AppendLine($"课题四 骨骼动画：{CountPresent(data)}/{data.task4.clips.Count} 个 clip");
 
+        sb.AppendLine("课题三 场景：");
+        if (data.task3.ready)
+        {
+            sb.AppendLine($"  面数 {data.task3.triangles} · 材质 {data.task3.materials}");
+            sb.AppendLine($"  包围盒 {data.task3.size.x:F2} × {data.task3.size.y:F2} × {data.task3.size.z:F2}");
+        }
+        else
+        {
+            sb.AppendLine("  还没有 Diorama.fbx");
+        }
+
+        sb.AppendLine($"课题四 骨骼动画：{CountPresent(data)}/{data.task4.clips.Count} 个 clip");
         foreach (var clip in data.task4.clips)
         {
             string state = clip.present ? clip.duration.ToString("F2") + " s" : "缺失";

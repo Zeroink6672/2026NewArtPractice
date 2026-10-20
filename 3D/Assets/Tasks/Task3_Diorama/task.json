@@ -1,0 +1,19 @@
+{
+  "taskId": "task3_diorama",
+  "title": "场景美化",
+  "contractVersion": 1,
+  "summary": "在给定的 Kit 和立方体白模上做美术打磨：构图、材质、打光。",
+  "baseAssets": {
+    "kit": "Assets/Tasks/Task3_Diorama/Base/Kit.fbx",
+    "blockout": "Assets/Tasks/Task3_Diorama/Base/Blockout.fbx",
+    "license": "CC0",
+    "note": "只能用 Kit 里的模型；白模只用来对位，最后要替换或包住。"
+  },
+  "delivery": {
+    "scanRoot": "Assets/Tasks/Task3_Diorama/DropHere",
+    "fileName": "Diorama.fbx",
+    "maxTriangles": 30000,
+    "maxTextures": 4,
+    "maxSize": { "x": 4.5, "y": 4.5, "z": 4.5 }
+  }
+}

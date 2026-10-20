@@ -31,6 +31,7 @@ public class PreviewAutoRefresh3D : AssetPostprocessor
 
         try
         {
+            Task3Pipeline.Generate();
             Task4Pipeline.Generate();
         }
         catch (Exception e)
@@ -55,6 +56,7 @@ public class PreviewAutoRefresh3D : AssetPostprocessor
         {
             _pending = false;
             if (Application.isPlaying) return;
+            Task3Pipeline.Generate();
             Task4Pipeline.Generate();
         };
     }
