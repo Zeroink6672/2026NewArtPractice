@@ -214,12 +214,18 @@ namespace ArtPractice3D.Preview
 
         private void BuildScene()
         {
-            if (_data.task3 == null || _data.task3.model == null) return;
+            if (_data.task3 == null) return;
 
-            var instance = Instantiate(_data.task3.model, _turntable);
-            instance.name = "Diorama";
+            bool submitted = _data.task3.model != null;
+            var source = submitted ? _data.task3.model : _data.task3.blockout;
+            if (source == null) return;
+
+            var instance = Instantiate(source, _turntable);
+            instance.name = submitted ? "Diorama" : "Blockout";
             instance.transform.localPosition = Vector3.zero;
-            ConvertMaterials(instance);
+
+            if (submitted) ConvertMaterials(instance);
+            else PaintNeutral(instance);
 
             FrameCamera(new Vector3(0f, 3.2f, -6.5f), new Vector3(0f, 1.2f, 0f), 40f);
         }
@@ -274,6 +280,14 @@ namespace ArtPractice3D.Preview
         {
             if (material == null) return;
             foreach (var renderer in instance.GetComponentsInChildren<Renderer>())
+                renderer.sharedMaterial = material;
+        }
+
+        private static void PaintNeutral(GameObject root)
+        {
+            var material = Neutral();
+            if (material == null) return;
+            foreach (var renderer in root.GetComponentsInChildren<Renderer>())
                 renderer.sharedMaterial = material;
         }
 
@@ -392,7 +406,7 @@ namespace ArtPractice3D.Preview
                     return _data.task3 != null && _data.task3.ready
                         ? $"课题三 · 面数 {_data.task3.triangles} · 材质 {_data.task3.materials} · " +
                           $"包围盒 {_data.task3.size.x:F2}×{_data.task3.size.y:F2}×{_data.task3.size.z:F2}"
-                        : "课题三 · 还没有 Diorama.fbx";
+                        : "课题三 · 当前显示白模（还没有提交 Diorama.fbx）";
                 default:
                     return $"课题四 · clips {CountClips()}/{_data.task4.clips.Count}";
             }

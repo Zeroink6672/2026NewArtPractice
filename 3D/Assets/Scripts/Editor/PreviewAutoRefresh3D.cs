@@ -27,7 +27,8 @@ public class PreviewAutoRefresh3D : AssetPostprocessor
             return;
         }
 
-        if (AssetDatabase.LoadAssetAtPath<PreviewData3D>(Task4Pipeline.DataAssetPath) != null) return;
+        var existing = AssetDatabase.LoadAssetAtPath<PreviewData3D>(Task4Pipeline.DataAssetPath);
+        if (existing != null && existing.schemaVersion == PreviewData3D.CurrentSchema) return;
 
         try
         {

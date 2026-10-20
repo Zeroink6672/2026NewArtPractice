@@ -229,6 +229,7 @@ public static class Task1Pipeline
 
     private static void Save(PreviewData3D data)
     {
+        data.schemaVersion = PreviewData3D.CurrentSchema;
         EditorUtility.SetDirty(data);
         AssetDatabase.SaveAssets();
         AssetDatabase.Refresh();

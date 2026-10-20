@@ -43,6 +43,7 @@ namespace ArtPractice3D.Preview
         public int materials;
         public Vector3 size;
         public GameObject model;
+        public GameObject blockout;
     }
 
     [Serializable]
@@ -86,6 +87,10 @@ namespace ArtPractice3D.Preview
     /// </summary>
     public class PreviewData3D : ScriptableObject
     {
+        /// <summary>数据结构版本；改字段时 +1，打开工程会自动重建，避免旧数据缺字段。</summary>
+        public const int CurrentSchema = 2;
+
+        public int schemaVersion;
         public string generatedBy;
 
         public GameObject basePrefab;

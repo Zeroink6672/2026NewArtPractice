@@ -34,6 +34,9 @@ public static class Task3Pipeline
         if (!File.Exists(contract.baseAssets.blockout))
             Add(data, IssueSeverity3D.Warning, contract.baseAssets.blockout, "找不到 Blockout.fbx");
 
+        // 没交作业时，预览里显示白模，让学员至少能看到起点
+        data.task3.blockout = AssetDatabase.LoadAssetAtPath<GameObject>(contract.baseAssets.blockout);
+
         string path = contract.delivery.scanRoot + "/" + contract.delivery.fileName;
         if (!File.Exists(path))
         {
@@ -165,6 +168,7 @@ public static class Task3Pipeline
 
     private static void Save(PreviewData3D data)
     {
+        data.schemaVersion = PreviewData3D.CurrentSchema;
         EditorUtility.SetDirty(data);
         AssetDatabase.SaveAssets();
         AssetDatabase.Refresh();
