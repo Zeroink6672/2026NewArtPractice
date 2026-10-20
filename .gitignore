@@ -94,3 +94,13 @@ desktop.ini
 *.mp4
 *.mov
 *.avi
+
+# ===========================================================================
+# 生成物：由 Tools / 美术课题 / 重新生成预览数据 自动重建，不入库
+# ===========================================================================
+/Assets/Resources.meta
+/Assets/Resources/
+/Assets/Tasks/Task2_Character/Animations.meta
+/Assets/Tasks/Task2_Character/Animations/
+/Assets/Tasks/Task2_Character/Character.controller*
+/Assets/Tasks/Task2_Character/Character.prefab*

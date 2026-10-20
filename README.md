@@ -21,26 +21,42 @@
 | --- | --- |
 | Unity | **2022.3.62f3c1（Unity 中国版）** |
 | Unity Hub | 用 [unity.cn](https://unity.cn) 的 Hub 安装对应版本。不要装"最新版"顶替 |
-| Git | 2.30 以上 |
-| Git LFS | **必须安装**，否则所有图片都会拉取失败 |
+| GitHub 账号 | 用来 Fork 仓库、开 Pull Request |
+| GitHub Desktop | 有图形界面，不用记命令 |
+| Git LFS | **必须安装**，否则图片会变成指针文件 |
 
 > 版本号里的 **`c1` 表示 Unity 中国版**。国际版 Hub 里没有 `2022.3.62f3c1` 这个版本，
 > 全班请统一从 unity.cn 安装，不要和国际版混用。
 > 核对方法：打开工程前对照 `ProjectSettings/ProjectVersion.txt` 里的 `m_EditorVersion`，必须**完全一致**。
 
-### 1.1 安装 Git LFS 并克隆
+### 1.1 把仓库 Fork 到自己账号下
+
+1. 打开助教发的仓库主页，点右上角 **Fork**
+2. 下一页直接点 **Create fork**
+3. 完成后你会停在 `你的用户名/2026NewArtPractice`，**之后所有操作都在这个副本上**
+
+> 为什么要 Fork：这是公开仓库，只有仓库所有者能直接往里推。Fork 出来的副本属于你，
+> 你随便提交；最后用 Pull Request 把改动交给助教。
+>
+> 公开仓库意味着**大家的提交互相可见**——别往仓库里放和课题无关的文件。
+
+### 1.2 用 GitHub Desktop 克隆自己的副本
+
+1. 安装 [GitHub Desktop](https://desktop.github.com/)，登录你的 GitHub 账号
+2. **File → Clone repository → GitHub.com**，在列表里选 `你的用户名/2026NewArtPractice`
+   —— 注意是**你自己账号下**的那个，不是助教的
+3. 本地路径保持**纯英文、无空格**
+4. **Repository → Open in Command Prompt**，执行一次：
 
 ```bash
-git lfs install          # 每台机器执行一次，装完 Git LFS 后运行
-git clone <仓库地址>
-cd 2026NewArtPractice
+git lfs install
 ```
 
-如果跳过 `git lfs install`，克隆下来的 PNG 会变成 100 多字节的文本文件（LFS 指针），Unity 里导入报错。排查见 §6。
+这一步每台机器做一次。做完用 `git lfs ls-files` 验证——能正常输出（哪怕是空列表）就说明 LFS 生效了。
 
-> 仓库地址以助教发的链接为准；用 `https://` 克隆时记得登录 GitHub 账号。
+> 如果克隆下来发现 PNG 只有 100 多字节，就是 LFS 没生效，见 §6。
 
-### 1.2 打开工程
+### 1.3 打开工程
 
 1. Unity Hub → **Add project from disk** → 选择仓库根目录（就是有 `Assets/`、`ProjectSettings/` 的那一层，**不是** `Assets/` 里面）
 2. 用 `ProjectVersion.txt` 里写的版本打开。提示"版本不一致"时，去装对应版本，不要点升级
@@ -61,6 +77,8 @@ cd 2026NewArtPractice
 4. **不要给已提交的文件改名或挪位置。** Unity 用 GUID 认资源，改名等于换了一个新资源，引用会断。要改就在分支里删掉重提。
 5. **一个分支只放一个人的作品。** 不要把两个人做的同一个课题合到一个分支里。
 6. **不要用 Git 客户端"自动合并"场景和预制体。** 仓库已设为二进制合并，冲突就找助教，别硬合。
+7. **提交前先看 GitHub Desktop 的 Changes：只应该有你任务目录下的文件。**
+   出现别的目录就右键还原，别"顺手一起提交"。
 
 ---
 
@@ -76,9 +94,9 @@ Assets/
 │   ├── Task2_Character/           课题二：角色状态机
 │   │   ├── task.json
 │   │   ├── Idle/  Run/  Attack/  Hit/  Die/    ← 文件夹名 = 状态名
-│   │   ├── Animations/            ← 生成物：每个状态一个 clip
-│   │   ├── Character.controller    ← 生成物：状态机
-│   │   ├── Character.prefab        ← 生成物：预览用角色
+│   │   ├── Animations/            ← 生成物（本地生成，不入库）
+│   │   ├── Character.controller    ← 生成物（本地生成，不入库）
+│   │   ├── Character.prefab        ← 生成物（本地生成，不入库）
 │   │   └── Examples/
 │   └── Task3_VFX/                 课题三：元素特效
 │       ├── task.json
@@ -92,7 +110,8 @@ Assets/
 
 **空文件夹不是丢了**：Git 不记录空目录，每个空目录里有一个 `.gitkeep` 占位文件，**不要删**。
 
-**标着「生成物」的文件由工具维护**，每次重新生成都会覆盖，不要手改。
+**标着「生成物」的文件不入库**：每台机器第一次打开工程时由工具自动重建。
+不要手改，也不用管它们有没有出现在 Git 里。
 
 ---
 
@@ -212,28 +231,65 @@ Console 里会打一行总览（有错误时是黄色）：
 
 ---
 
-## 7. 提交流程
+## 7. 提交流程（Fork → 分支 → PR）
 
-```bash
-# 1. 从最新 main 开自己的分支（命名：课题号-昵称）
-git checkout main
-git pull
-git checkout -b task2-zhangsan
+### 7.1 建分支
 
-# 2. 把图放进对应文件夹后
-git add Assets/Tasks/Task2_Character
-git commit -m "task2: 角色五状态序列帧"
-git push -u origin task2-zhangsan
-```
+GitHub Desktop → **Current Branch → New Branch**，名字用 **`taskX-拼音`**，例如 `task1-zhangsan`。
 
-然后在 GitHub 发起 Pull Request（目标分支 `main`），PR 描述里写：
+> 别用中文：网页上会变成 `%E4%BD%A0...` 这种乱码，出问题不好查。也别用空格。
 
-- 课题编号与昵称
-- 实际帧数 / 文件数
-- 自检报告截图（Console 里「美术课题自检」那一段）
-- 一张 1920×1080 的预览截图
+### 7.2 提交
 
-**不要自己合并 PR**，助教验收后统一处理。
+把图放进对应文件夹后，回到 GitHub Desktop：
+
+1. 左侧 **Changes** 里确认改动**只有**你自己任务目录下的文件：
+   - 课题一：`Assets/Tasks/Task1_Icons/DropHere/` 下的 `.png` 和 `.png.meta`
+   - 课题二：`Assets/Tasks/Task2_Character/<状态名>/` 下的序列帧
+   - 课题三：`Assets/Tasks/Task3_VFX/<元素>/<类型>/` 下的序列帧
+2. 如果出现 `ProjectSettings/`、`Packages/`、`Assets/Scripts/`、`Assets/Scenes/`——说明改错地方了，右键 **Discard changes** 还原
+3. Summary 写清楚，例如 `task1: 16 枚道具图标`
+4. 点 **Commit to task1-zhangsan**
+
+> `.meta` 是 Unity 的资源身份证，必须跟着 PNG 一起提交。GitHub Desktop 会自动勾上，**别手动取消**。
+
+### 7.3 推送
+
+右上角 **Push origin**（第一次显示 **Publish branch**）。
+
+### 7.4 开 Pull Request
+
+1. 推送后 GitHub Desktop 会出现 **Create Pull Request**，点它
+2. 浏览器打开比较页，**核对三行**：
+   - `base repository` = 助教的仓库（**不是**你自己的 fork）
+   - `base` = `main`
+   - `compare` = `你的账号:task1-zhangsan`
+3. 标题写 `task1-张三`，描述里贴三样东西：
+   - Console 里「美术课题自检」那段结果
+   - 实际交付的文件数 / 帧数
+   - 一张 Game 窗口截图（`Win + Shift + S` 框选即可）
+4. **Create pull request**
+
+### 7.5 等验收、改完再推
+
+助教直接在 PR 里评论。你改完后：
+
+1. 在**同一个分支**上继续 commit
+2. Push origin
+3. PR 会自动更新，**不用重新开一个**
+
+> 不要点 Merge，合并由助教处理。
+
+### 7.6 助教更新了 main 怎么办
+
+只有助教改了 `task.json` 或加了范例时才需要，平时不用管：
+
+1. 网页上打开你的 fork，点 **Sync fork → Update branch**
+2. GitHub Desktop 点 **Fetch origin**
+3. 切到 `main` → **Pull origin**
+4. 切回自己分支 → **Branch → Merge into Current Branch** → 选 `main`
+
+只往自己目录加文件的同学，冲突概率基本为零。
 
 ---
 
@@ -259,5 +315,11 @@ git push -u origin task2-zhangsan
   - `Editor/PreviewGenerator.cs` 扫描 + 生成 clip / controller / prefab / catalog
   - `Editor/TaskTexturePostprocessor.cs` 贴图导入规则（改规则时记得把 `ImportVersion` 加一）
   - `Editor/ArtPracticeSelfCheck.cs` 自检报告
-- 生成物已入库；输入不变时重复生成是逐字节一致的，不会产生无意义的 diff
+- 生成物（`Resources/Preview/`、`Animations/`、`Character.controller`、`Character.prefab`）**不入库**，
+  每台机器打开工程时自动重建——所以合并 PR 时不会有生成物冲突
+- 收作业就看 PR 列表：`Files changed` 里应该只有 `Assets/Tasks/<任务>/` 下的图片；
+  出现别的目录说明学生改错了地方，直接打回
+- 验收阶段不用合并；要归档再合。合并后 clone 一次 `main`，确认图片不是 100 多字节
+  （fork + LFS 唯一需要盯的地方）
+- 改了 `task.json` 要提醒学生 Sync fork，否则他们本地还是旧契约
 - `Examples/` 目前为空，需要补 1~2 组格式范例

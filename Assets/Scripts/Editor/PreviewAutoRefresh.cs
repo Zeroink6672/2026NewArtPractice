@@ -15,12 +15,32 @@ public class PreviewAutoRefresh : AssetPostprocessor
     [InitializeOnLoadMethod]
     private static void EnsureCatalogOnLoad()
     {
-        EditorApplication.delayCall += () =>
+        // 生成物不入库，新克隆的工程第一次打开时这里负责把它建出来
+        EditorApplication.delayCall += TryEnsureCatalog;
+    }
+
+    private static void TryEnsureCatalog()
+    {
+        if (Application.isPlaying) return;
+
+        // 初次导入 / 编译期间不要碰 AssetDatabase，往后再排一次
+        if (EditorApplication.isUpdating || EditorApplication.isCompiling)
         {
-            if (Application.isPlaying) return;
-            if (AssetDatabase.LoadAssetAtPath<PreviewCatalog>(PreviewGenerator.CatalogAssetPath) == null)
-                PreviewGenerator.Generate();
-        };
+            EditorApplication.delayCall += TryEnsureCatalog;
+            return;
+        }
+
+        if (AssetDatabase.LoadAssetAtPath<PreviewCatalog>(PreviewGenerator.CatalogAssetPath) != null) return;
+
+        try
+        {
+            PreviewGenerator.Generate();
+        }
+        catch (Exception e)
+        {
+            Debug.LogWarning("[美术课题] 自动生成预览数据失败，手动执行 Tools / 美术课题 / 重新生成预览数据："
+                             + e.Message);
+        }
     }
 
     private static void OnPostprocessAllAssets(string[] imported, string[] deleted, string[] movedTo, string[] movedFrom)
